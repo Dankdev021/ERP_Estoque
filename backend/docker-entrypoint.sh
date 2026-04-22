@@ -6,6 +6,19 @@ if [ ! -f .env ]; then
   cp .env.example .env
 fi
 
+if [ -f /.dockerenv ]; then
+  if grep -q '^DB_HOST=' .env 2>/dev/null; then
+    sed -i 's/^DB_HOST=.*/DB_HOST=mysql/' .env
+  else
+    printf '\nDB_HOST=mysql\n' >> .env
+  fi
+  if grep -q '^DB_CONNECTION=' .env 2>/dev/null; then
+    sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=mysql/' .env
+  else
+    printf 'DB_CONNECTION=mysql\n' >> .env
+  fi
+fi
+
 composer install --no-interaction --prefer-dist
 
 if ! grep -q '^APP_KEY=base64:' .env 2>/dev/null; then

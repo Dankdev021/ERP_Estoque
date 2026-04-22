@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateProductRequest extends FormRequest
+class CadastrarProdutoRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,6 +16,7 @@ class UpdateProductRequest extends FormRequest
         return [
             'nome' => ['required', 'string', 'min:3'],
             'preco_venda' => ['required', 'numeric', 'gt:0'],
+            'estoque_inicial' => ['sometimes', 'integer', 'min:0'],
         ];
     }
 
@@ -24,6 +25,7 @@ class UpdateProductRequest extends FormRequest
         return [
             'nome' => 'nome',
             'preco_venda' => 'preço de venda',
+            'estoque_inicial' => 'estoque inicial',
         ];
     }
 }
