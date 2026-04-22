@@ -1,85 +1,80 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
+  <div class="app-shell">
+    <aside class="sidebar">
+      <h1>ERP Estoque</h1>
       <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/dashboard">Dashboard</RouterLink>
+        <RouterLink to="/produtos">Produtos</RouterLink>
+        <RouterLink to="/compras">Compras</RouterLink>
+        <RouterLink to="/vendas">Vendas</RouterLink>
       </nav>
-    </div>
-  </header>
-
-  <RouterView />
+    </aside>
+    <main class="content">
+      <RouterView />
+    </main>
+  </div>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 240px 1fr;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+.sidebar {
+  background: var(--color-primary);
+  color: #fff;
+  padding: 24px 16px;
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+.sidebar h1 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
+.sidebar nav {
+  display: grid;
+  gap: 8px;
 }
 
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+.sidebar a {
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-weight: 600;
 }
 
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
+.sidebar a.router-link-active {
+  background: rgba(255, 255, 255, 0.2);
 }
 
-nav a:first-of-type {
-  border: 0;
+.content {
+  padding: 24px;
+  background: #fff;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+@media (max-width: 900px) {
+  .app-shell {
+    grid-template-columns: 1fr;
   }
 
-  .logo {
-    margin: 0 2rem 0 0;
+  .sidebar {
+    padding: 16px;
   }
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
+  .sidebar nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
+  .content {
+    padding: 16px;
   }
 }
 </style>

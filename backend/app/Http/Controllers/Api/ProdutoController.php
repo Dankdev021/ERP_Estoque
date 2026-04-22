@@ -14,7 +14,7 @@ class ProdutoController extends Controller
 {
     public function index()
     {
-        $produtos = Product::query()->orderBy('name')->get();
+        $produtos = Product::query()->orderBy('name')->paginate(15);
 
         return ProdutoResource::collection($produtos);
     }

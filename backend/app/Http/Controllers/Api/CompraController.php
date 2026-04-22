@@ -20,7 +20,7 @@ class CompraController extends Controller
             ->with(['supplier', 'product'])
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->get();
+            ->paginate(15);
 
         return LinhaCompraResource::collection($compras);
     }
