@@ -15,6 +15,7 @@ const salvando = ref(false)
 const erro = ref('')
 const sucesso = ref('')
 const modalAberto = ref(false)
+const busca = ref('')
 
 const form = reactive({
   fornecedor: '',
@@ -55,7 +56,7 @@ function fecharModal() {
 async function carregarCompras(page = 1) {
   carregando.value = true
   try {
-    const resposta = await listarCompras(page)
+    const resposta = await listarCompras(page, busca.value)
     compras.value = resposta.data || []
     meta.value = resposta.meta || {}
   } catch (e) {
@@ -63,6 +64,10 @@ async function carregarCompras(page = 1) {
   } finally {
     carregando.value = false
   }
+}
+
+function pesquisar() {
+  carregarCompras(1)
 }
 
 async function carregarProdutos() {
@@ -116,7 +121,17 @@ onMounted(async () => {
     <div class="page-toolbar">
       <h2 class="page-title">Compras</h2>
       <p class="page-subtitle">Entradas de estoque e custo médio.</p>
-      <button type="button" class="btn" @click="abrirModal">Cadastrar compra</button>
+      <div class="inline filtro-busca">
+        <input
+          v-model="busca"
+          class="filtro-busca-input"
+          type="text"
+          placeholder="Buscar por número, fornecedor ou produto"
+          @keyup.enter="pesquisar"
+        />
+        <button type="button" class="btn btn-outline" @click="pesquisar">Pesquisar</button>
+      </div>
+      <button type="button" class="btn btn-cadastro" @click="abrirModal">Cadastrar compra</button>
     </div>
 
     <AlertMessage tipo="erro" :mensagem="erro" />
@@ -214,5 +229,25 @@ onMounted(async () => {
 .modal-acoes {
   justify-content: flex-end;
   margin-top: 4px;
+}
+
+.filtro-busca {
+  justify-content: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.filtro-busca-input {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  min-height: 42px;
+  border-radius: 10px;
+}
+
+.btn-cadastro {
+  margin-top: 6px;
 }
 </style>

@@ -21,6 +21,7 @@ const editandoId = ref(null)
 const modalAberto = ref(false)
 const modalExclusaoAberto = ref(false)
 const produtoParaExcluir = ref(null)
+const busca = ref('')
 
 const form = reactive({
   nome: '',
@@ -70,7 +71,7 @@ function fecharModal() {
 async function carregar(page = 1) {
   carregando.value = true
   try {
-    const resposta = await listarProdutos(page)
+    const resposta = await listarProdutos(page, busca.value)
     produtos.value = resposta.data || []
     meta.value = resposta.meta || {}
   } catch (e) {
@@ -78,6 +79,10 @@ async function carregar(page = 1) {
   } finally {
     carregando.value = false
   }
+}
+
+function pesquisar() {
+  carregar(1)
 }
 
 async function salvar() {
@@ -146,7 +151,17 @@ onMounted(() => {
     <div class="page-toolbar">
       <h2 class="page-title">Produtos</h2>
       <p class="page-subtitle">Lista de produtos do estoque.</p>
-      <button type="button" class="btn" @click="abrirModalCadastro">Cadastrar produto</button>
+      <div class="inline filtro-busca">
+        <input
+          v-model="busca"
+          class="filtro-busca-input"
+          type="text"
+          placeholder="Buscar por nome do produto"
+          @keyup.enter="pesquisar"
+        />
+        <button type="button" class="btn btn-outline" @click="pesquisar">Pesquisar</button>
+      </div>
+      <button type="button" class="btn btn-cadastro" @click="abrirModalCadastro">Cadastrar produto</button>
     </div>
 
     <AlertMessage tipo="erro" :mensagem="erro" />
@@ -224,5 +239,25 @@ onMounted(() => {
 .modal-acoes {
   justify-content: flex-end;
   margin-top: 8px;
+}
+
+.filtro-busca {
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.filtro-busca-input {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  min-height: 42px;
+  border-radius: 10px;
+}
+
+.btn-cadastro {
+  margin-top: 6px;
 }
 </style>

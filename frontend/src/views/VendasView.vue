@@ -18,6 +18,7 @@ const cancelandoNumero = ref('')
 const modalAberto = ref(false)
 const modalCancelamentoAberto = ref(false)
 const numeroVendaParaCancelar = ref('')
+const busca = ref('')
 
 const form = reactive({
   cliente: '',
@@ -58,7 +59,7 @@ function fecharModal() {
 async function carregarVendas(page = 1) {
   carregando.value = true
   try {
-    const resposta = await listarVendas(page)
+    const resposta = await listarVendas(page, busca.value)
     vendas.value = resposta.data || []
     meta.value = resposta.meta || {}
   } catch (e) {
@@ -66,6 +67,10 @@ async function carregarVendas(page = 1) {
   } finally {
     carregando.value = false
   }
+}
+
+function pesquisar() {
+  carregarVendas(1)
 }
 
 async function carregarProdutos() {
@@ -156,7 +161,17 @@ onMounted(async () => {
     <div class="page-toolbar">
       <h2 class="page-title">Vendas</h2>
       <p class="page-subtitle">Saídas de estoque, total e lucro.</p>
-      <button type="button" class="btn" @click="abrirModal">Cadastrar venda</button>
+      <div class="inline filtro-busca">
+        <input
+          v-model="busca"
+          class="filtro-busca-input"
+          type="text"
+          placeholder="Buscar por número, cliente ou produto"
+          @keyup.enter="pesquisar"
+        />
+        <button type="button" class="btn btn-outline" @click="pesquisar">Pesquisar</button>
+      </div>
+      <button type="button" class="btn btn-cadastro" @click="abrirModal">Cadastrar venda</button>
     </div>
 
     <AlertMessage tipo="erro" :mensagem="erro" />
@@ -290,5 +305,25 @@ onMounted(async () => {
 .modal-acoes {
   justify-content: flex-end;
   margin-top: 4px;
+}
+
+.filtro-busca {
+  justify-content: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.filtro-busca-input {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  min-height: 42px;
+  border-radius: 10px;
+}
+
+.btn-cadastro {
+  margin-top: 6px;
 }
 </style>

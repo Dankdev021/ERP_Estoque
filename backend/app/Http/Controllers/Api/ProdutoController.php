@@ -2,33 +2,36 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\Produtos\ProdutoService;
+use App\Domain\Support\Exceptions\RegraNegocioException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CadastrarProdutoRequest;
 use App\Http\Requests\AtualizarProdutoRequest;
 use App\Http\Resources\ProdutoResource;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class ProdutoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $produtos = Product::query()->orderBy('name')->paginate(15);
+        $busca = trim((string) $request->query('busca', ''));
+
+        $produtos = Product::query()
+            ->when($busca !== '', function ($query) use ($busca) {
+                $query->where('name', 'like', '%'.$busca.'%');
+            })
+            ->orderBy('name')
+            ->paginate(15);
 
         return ProdutoResource::collection($produtos);
     }
 
     public function store(CadastrarProdutoRequest $request): JsonResponse
     {
-        $data = $request->validated();
-
-        $produto = Product::query()->create([
-            'name' => $data['nome'],
-            'sale_price' => $data['preco_venda'],
-            'average_cost' => 0,
-            'stock_quantity' => 0,
-        ]);
+        $produto = app(ProdutoService::class)->criar($request->validated());
 
         return ProdutoResource::make($produto)
             ->response()
@@ -37,25 +40,20 @@ class ProdutoController extends Controller
 
     public function update(AtualizarProdutoRequest $request, Product $produto): ProdutoResource
     {
-        $data = $request->validated();
+        $produtoAtualizado = app(ProdutoService::class)->atualizar($produto, $request->validated());
 
-        $produto->update([
-            'name' => $data['nome'],
-            'sale_price' => $data['preco_venda'],
-        ]);
-
-        return ProdutoResource::make($produto->fresh());
+        return ProdutoResource::make($produtoAtualizado);
     }
 
     public function destroy(Product $produto): Response
     {
-        if ($produto->purchases()->exists() || $produto->sales()->exists()) {
+        try {
+            app(ProdutoService::class)->excluir($produto);
+        } catch (RegraNegocioException $e) {
             return response()->json([
-                'message' => 'Não é possível excluir produto com compras ou vendas vinculadas.',
-            ], 422);
+                'message' => $e->getMessage(),
+            ], $e->status());
         }
-
-        $produto->delete();
 
         return response()->noContent();
     }

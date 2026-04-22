@@ -1,7 +1,8 @@
 import { api } from './api'
 
-export function listarVendas(page = 1) {
-  return api.get(`/api/vendas?page=${page}`)
+export function listarVendas(page = 1, busca = '') {
+  const termo = encodeURIComponent(busca.trim())
+  return api.get(`/api/vendas?page=${page}&busca=${termo}`)
 }
 
 export function registrarVenda(payload) {

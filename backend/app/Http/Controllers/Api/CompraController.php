@@ -2,22 +2,31 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\Compras\CompraService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegistrarCompraRequest;
 use App\Http\Resources\LinhaCompraResource;
-use App\Models\Product;
 use App\Models\Purchase;
-use App\Models\Supplier;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 
 class CompraController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $busca = trim((string) $request->query('busca', ''));
+
         $compras = Purchase::query()
             ->with(['supplier', 'product'])
+            ->when($busca !== '', function ($query) use ($busca) {
+                $query->where('purchase_number', 'like', '%'.$busca.'%')
+                    ->orWhereHas('supplier', function ($supplierQuery) use ($busca) {
+                        $supplierQuery->where('name', 'like', '%'.$busca.'%');
+                    })
+                    ->orWhereHas('product', function ($productQuery) use ($busca) {
+                        $productQuery->where('name', 'like', '%'.$busca.'%');
+                    });
+            })
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(15);
@@ -27,70 +36,7 @@ class CompraController extends Controller
 
     public function store(RegistrarCompraRequest $request): JsonResponse
     {
-        $payload = $request->validated();
-
-        $result = DB::transaction(function () use ($payload) {
-            $supplier = Supplier::query()->firstOrCreate(
-                ['name' => $payload['fornecedor']],
-                ['country' => 'BR'],
-            );
-
-            $purchaseNumber = 'CMP-'.now()->format('Ymd').'-'.Str::upper(Str::random(8));
-
-            $items = [];
-
-            foreach ($payload['produtos'] as $line) {
-                $product = Product::query()->lockForUpdate()->findOrFail($line['id']);
-                $quantity = (int) $line['quantidade'];
-                $unitPrice = (string) $line['preco_unitario'];
-                $lineTotal = bcmul((string) $quantity, $unitPrice, 2);
-
-                $previousStock = (int) $product->stock_quantity;
-                $previousCost = (string) $product->average_cost;
-                $newStock = $previousStock + $quantity;
-
-                if ($newStock > 0) {
-                    $previousStockValue = bcmul((string) $previousStock, $previousCost, 4);
-                    $purchaseValue = bcmul((string) $quantity, $unitPrice, 4);
-                    $totalValue = bcadd($previousStockValue, $purchaseValue, 4);
-                    $newAverageCost = bcdiv($totalValue, (string) $newStock, 2);
-                } else {
-                    $newAverageCost = $product->average_cost;
-                }
-
-                Purchase::query()->create([
-                    'purchase_number' => $purchaseNumber,
-                    'supplier_id' => $supplier->id,
-                    'product_id' => $product->id,
-                    'quantity' => $quantity,
-                    'unit_price' => $unitPrice,
-                    'line_total' => $lineTotal,
-                ]);
-
-                $product->update([
-                    'stock_quantity' => $newStock,
-                    'average_cost' => $newAverageCost,
-                ]);
-
-                $product->refresh();
-
-                $items[] = [
-                    'id' => $product->id,
-                    'nome' => $product->name,
-                    'quantidade' => $quantity,
-                    'preco_unitario' => $unitPrice,
-                    'total_linha' => $lineTotal,
-                    'custo_medio_atualizado' => $product->average_cost,
-                    'estoque_atual' => $product->stock_quantity,
-                ];
-            }
-
-            return [
-                'numero_compra' => $purchaseNumber,
-                'fornecedor' => $supplier->name,
-                'produtos' => $items,
-            ];
-        });
+        $result = app(CompraService::class)->registrar($request->validated());
 
         return response()->json($result, 201);
     }

@@ -1,7 +1,8 @@
 import { api } from './api'
 
-export function listarProdutos(page = 1) {
-  return api.get(`/api/produtos?page=${page}`)
+export function listarProdutos(page = 1, busca = '') {
+  const termo = encodeURIComponent(busca.trim())
+  return api.get(`/api/produtos?page=${page}&busca=${termo}`)
 }
 
 export async function listarTodosProdutos() {
