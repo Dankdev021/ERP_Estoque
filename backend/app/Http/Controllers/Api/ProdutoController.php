@@ -22,13 +22,12 @@ class ProdutoController extends Controller
     public function store(CadastrarProdutoRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $initialStock = (int) ($data['estoque_inicial'] ?? 0);
 
         $produto = Product::query()->create([
             'name' => $data['nome'],
             'sale_price' => $data['preco_venda'],
             'average_cost' => 0,
-            'stock_quantity' => $initialStock,
+            'stock_quantity' => 0,
         ]);
 
         return ProdutoResource::make($produto)

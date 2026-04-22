@@ -16,7 +16,6 @@ class CadastrarProdutoRequest extends FormRequest
         return [
             'nome' => ['required', 'string', 'min:3'],
             'preco_venda' => ['required', 'numeric', 'gt:0'],
-            'estoque_inicial' => ['sometimes', 'integer', 'min:0'],
         ];
     }
 
@@ -25,7 +24,6 @@ class CadastrarProdutoRequest extends FormRequest
         return [
             'nome' => 'nome',
             'preco_venda' => 'preço de venda',
-            'estoque_inicial' => 'estoque inicial',
         ];
     }
 }

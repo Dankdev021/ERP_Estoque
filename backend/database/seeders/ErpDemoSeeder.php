@@ -58,8 +58,6 @@ class ErpDemoSeeder extends Seeder
                 $p = Product::query()->create([
                     'name' => $r['nome'],
                     'sale_price' => $r['preco_venda'],
-                    'average_cost' => 0,
-                    'stock_quantity' => 0,
                 ]);
                 $idsProdutos[] = $p->id;
             }

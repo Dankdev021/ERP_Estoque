@@ -23,7 +23,6 @@ const modalAberto = ref(false)
 const form = reactive({
   nome: '',
   preco_venda: '',
-  estoque_inicial: 0,
 })
 
 const tituloModal = computed(() => (editandoId.value ? 'Editar produto' : 'Cadastrar produto'))
@@ -36,7 +35,6 @@ function limparMensagens() {
 function limparFormulario() {
   form.nome = ''
   form.preco_venda = ''
-  form.estoque_inicial = 0
   editandoId.value = null
 }
 
@@ -59,7 +57,6 @@ function abrirModalEdicao(produto) {
   editandoId.value = produto.id
   form.nome = produto.nome
   form.preco_venda = produto.preco_venda
-  form.estoque_inicial = produto.estoque
   modalAberto.value = true
 }
 
@@ -88,7 +85,6 @@ async function salvar() {
     const payload = {
       nome: form.nome,
       preco_venda: Number(form.preco_venda),
-      estoque_inicial: Number(form.estoque_inicial || 0),
     }
     if (editandoId.value) {
       await atualizarProduto(editandoId.value, {
@@ -178,16 +174,6 @@ onMounted(() => {
         <div class="field">
           <label>Preço de venda (Preço sugerido)</label>
           <input v-model="form.preco_venda" required min="0.01" step="0.01" type="number" />
-        </div>
-        <div class="field">
-          <label>Estoque inicial</label>
-          <input
-            v-model="form.estoque_inicial"
-            :disabled="Boolean(editandoId)"
-            min="0"
-            step="1"
-            type="number"
-          />
         </div>
         <div class="inline modal-acoes">
           <button class="btn btn-outline" type="button" @click="fecharModal">Cancelar</button>

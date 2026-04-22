@@ -49,19 +49,18 @@ class ProdutoTest extends TestCase
         $criado = $this->postJson('/api/produtos', [
             'nome' => 'Caderno',
             'preco_venda' => 19.9,
-            'estoque_inicial' => 5,
         ]);
         $criado->assertStatus(201);
         $d = $criado->json('data');
         $this->assertSame('Caderno', $d['nome']);
         $this->assertEquals(19.9, (float) $d['preco_venda']);
-        $this->assertEquals(5, (int) $d['estoque']);
+        $this->assertEquals(0, (int) $d['estoque']);
         $this->assertEquals(0.0, (float) $d['custo_medio']);
 
         $this->assertDatabaseHas('products', [
             'name' => 'Caderno',
             'sale_price' => 19.9,
-            'stock_quantity' => 5,
+            'stock_quantity' => 0,
         ]);
     }
 
