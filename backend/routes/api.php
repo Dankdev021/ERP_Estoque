@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\CompraController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ProdutoController;
 use App\Http\Controllers\Api\VendaController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/dashboard', [DashboardController::class, 'resumo'])->name('dashboard.resumo');
 
 Route::prefix('compras')->name('compras.')->group(function () {
     Route::get('/', [CompraController::class, 'index'])->name('index');

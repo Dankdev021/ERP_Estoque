@@ -2,8 +2,15 @@
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { obterTotais } from '@/services/dashboard'
+import { moeda } from '@/utils/format'
 
-const totais = ref({ produtos: 0, compras: 0, vendas: 0 })
+const totais = ref({
+  produtos: 0,
+  compras: 0,
+  vendas: 0,
+  lucro_liquido: '0.00',
+  lucro_presumido: '0.00',
+})
 const carregando = ref(true)
 const erro = ref('')
 
@@ -27,6 +34,24 @@ onMounted(async () => {
       <p class="page-subtitle">Acesse rapidamente os módulos do ERP.</p>
     </div>
     <p v-if="erro" class="erro-msg">{{ erro }}</p>
+    <p class="section-label">Métricas financeiras</p>
+    <div class="grid-2">
+      <div class="card metric-panel">
+        <span class="metric-titulo">Lucro líquido</span>
+        <span class="metric" aria-label="Lucro líquido">{{
+          carregando ? '—' : moeda(totais.lucro_liquido)
+        }}</span>
+        <p class="metric-detalhe">Lucro em vendas não canceladas</p>
+      </div>
+      <div class="card metric-panel">
+        <span class="metric-titulo">Lucro presumido</span>
+        <span class="metric" aria-label="Lucro presumido">{{
+          carregando ? '—' : moeda(totais.lucro_presumido)
+        }}</span>
+        <p class="metric-detalhe">Margem se o estoque for vendido ao preço sugerido</p>
+      </div>
+    </div>
+    <p class="section-label">Acesso rápido</p>
     <div class="grid-2">
       <RouterLink class="card link-card" to="/produtos">
         <span class="link-titulo">Gerenciar Produtos</span>
@@ -84,5 +109,37 @@ onMounted(async () => {
   color: var(--color-danger, #b91c1c);
   font-size: 14px;
   margin: 0;
+}
+
+.section-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-muted, #64748b);
+  margin: 0 0 4px 0;
+}
+
+.grid-2 + .section-label {
+  margin-top: 20px;
+}
+
+.metric-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.metric-titulo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text, #0f172a);
+}
+
+.metric-detalhe {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted, #64748b);
+  font-weight: 500;
+  line-height: 1.35;
 }
 </style>
