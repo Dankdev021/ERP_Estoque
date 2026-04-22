@@ -16,6 +16,8 @@ const erro = ref('')
 const sucesso = ref('')
 const cancelandoNumero = ref('')
 const modalAberto = ref(false)
+const modalCancelamentoAberto = ref(false)
+const numeroVendaParaCancelar = ref('')
 
 const form = reactive({
   cliente: '',
@@ -111,7 +113,6 @@ function primeiraLinhaDoNumero(item) {
 }
 
 async function cancelar(numeroVenda) {
-  if (!window.confirm(`Deseja cancelar a venda ${numeroVenda}?`)) return
   limparMensagens()
   cancelandoNumero.value = numeroVenda
   try {
@@ -124,6 +125,24 @@ async function cancelar(numeroVenda) {
   } finally {
     cancelandoNumero.value = ''
   }
+}
+
+function abrirModalCancelamento(numeroVenda) {
+  limparMensagens()
+  numeroVendaParaCancelar.value = numeroVenda
+  modalCancelamentoAberto.value = true
+}
+
+function fecharModalCancelamento() {
+  modalCancelamentoAberto.value = false
+  numeroVendaParaCancelar.value = ''
+}
+
+async function confirmarCancelamento() {
+  if (!numeroVendaParaCancelar.value) return
+  const numeroVenda = numeroVendaParaCancelar.value
+  fecharModalCancelamento()
+  await cancelar(numeroVenda)
 }
 
 onMounted(async () => {
@@ -175,7 +194,7 @@ onMounted(async () => {
                 class="btn btn-danger"
                 type="button"
                 :disabled="cancelandoNumero === item.numero_venda"
-                @click="cancelar(item.numero_venda)"
+                @click="abrirModalCancelamento(item.numero_venda)"
               >
                 Cancelar
               </button>
@@ -230,6 +249,26 @@ onMounted(async () => {
           </button>
         </div>
       </form>
+    </ModalBase>
+
+    <ModalBase
+      :aberto="modalCancelamentoAberto"
+      titulo="Cancelar venda"
+      @fechar="fecharModalCancelamento"
+    >
+      <p>
+        Confirma o cancelamento da venda <strong>{{ numeroVendaParaCancelar }}</strong>?
+      </p>
+      <template #rodape>
+        <div class="inline modal-acoes">
+          <button class="btn btn-outline" type="button" @click="fecharModalCancelamento">
+            Voltar
+          </button>
+          <button class="btn btn-danger" type="button" @click="confirmarCancelamento">
+            Cancelar venda
+          </button>
+        </div>
+      </template>
     </ModalBase>
   </section>
 </template>

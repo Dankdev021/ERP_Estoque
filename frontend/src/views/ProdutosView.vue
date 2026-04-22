@@ -19,6 +19,8 @@ const erro = ref('')
 const sucesso = ref('')
 const editandoId = ref(null)
 const modalAberto = ref(false)
+const modalExclusaoAberto = ref(false)
+const produtoParaExcluir = ref(null)
 
 const form = reactive({
   nome: '',
@@ -116,6 +118,24 @@ async function remover(id) {
   }
 }
 
+function abrirModalExclusao(produto) {
+  limparMensagens()
+  produtoParaExcluir.value = produto
+  modalExclusaoAberto.value = true
+}
+
+function fecharModalExclusao() {
+  modalExclusaoAberto.value = false
+  produtoParaExcluir.value = null
+}
+
+async function confirmarExclusao() {
+  if (!produtoParaExcluir.value) return
+  const id = produtoParaExcluir.value.id
+  fecharModalExclusao()
+  await remover(id)
+}
+
 onMounted(() => {
   carregar()
 })
@@ -154,7 +174,9 @@ onMounted(() => {
               <button type="button" class="btn btn-outline" @click="abrirModalEdicao(item)">
                 Editar
               </button>
-              <button type="button" class="btn btn-danger" @click="remover(item.id)">Excluir</button>
+              <button type="button" class="btn btn-danger" @click="abrirModalExclusao(item)">
+                Excluir
+              </button>
             </td>
           </tr>
           <tr v-if="!produtos.length && !carregando">
@@ -182,6 +204,18 @@ onMounted(() => {
           </button>
         </div>
       </form>
+    </ModalBase>
+
+    <ModalBase :aberto="modalExclusaoAberto" titulo="Excluir produto" @fechar="fecharModalExclusao">
+      <p>
+        Confirma a exclusão do produto <strong>{{ produtoParaExcluir?.nome }}</strong>?
+      </p>
+      <template #rodape>
+        <div class="inline modal-acoes">
+          <button class="btn btn-outline" type="button" @click="fecharModalExclusao">Cancelar</button>
+          <button class="btn btn-danger" type="button" @click="confirmarExclusao">Excluir</button>
+        </div>
+      </template>
     </ModalBase>
   </section>
 </template>
